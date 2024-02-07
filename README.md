@@ -7,7 +7,20 @@ Mida is a PHP library for interacting with the Mida API, allowing you to perform
 To use Mida in your PHP project, you can install it using Composer. Simply add the following line to your `composer.json` file and run the `composer install` command:
 
 ```json
-"require": {
+"repositories": [
+{
+    "type": "package",
+    "package": {
+        "name": "mida-php",
+        "version": "1.0",
+        "source": {
+            "url": "https://github.com/mida-so/mida-php.git",
+            "type": "git",
+            "reference": "master"
+        }
+    }
+}],
+"require" : {
     "guzzlehttp/guzzle": "^7.0"
 }
 ```
