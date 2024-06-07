@@ -58,13 +58,17 @@ To use the Mida class in your project, follow these steps:
     }
     ```
 
-4. Track events by calling the `setEvent` method and passing the event name and user distinct ID:
+4. Track events by calling the `setEvent` method and passing the event name, user distinct ID, and optional event attributes:
     ```php
     $eventName = "your_event_name";
     $distinctId = "user_distinct_id";
+    $properties = [
+        "plan" => "Basic",
+        "paid" => "yes"
+    ];
     
     try {
-        $mida->setEvent($eventName, $distinctId);
+        $mida->setEvent($eventName, $distinctId, $properties);
         echo "Event tracked successfully";
     } catch (Exception $e) {
         echo "Error: " . $e->getMessage();
