@@ -47,14 +47,15 @@ class Mida {
         return null;
     }
 
-    function setEvent($eventName, $distinctId) {
+    function setEvent($eventName, $distinctId, $properties = []) {
         if (!$eventName || !$distinctId) {
             throw new Exception("You need to set an event name. You must pass your user distinct ID");
         }
         $data = [
             'key' => $this->publicKey,
             'name' => $eventName,
-            'distinct_id' => $distinctId || $this->user_id
+            'distinct_id' => $distinctId || $this->user_id,
+            'properties' => json_encode($properties)
         ];
         $headers = [];
         $client = new Client([
