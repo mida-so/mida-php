@@ -54,7 +54,7 @@ class Mida {
         $data = [
             'key' => $this->publicKey,
             'name' => $eventName,
-            'distinct_id' => $distinctId || $this->user_id,
+            'distinct_id' => $distinctId ?: $this->user_id
             'properties' => json_encode($properties)
         ];
         $headers = [];
