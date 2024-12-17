@@ -24,13 +24,13 @@ class Mida {
     }
 
     function getExperiment($experimentKey, $distinctId) {
-        if (!$experimentKey || !$distinctId || !$this->user_id) {
+        if (!$experimentKey || (!$distinctId && !$this->user_id)) {
             throw new Exception("You must pass your Mida experiment key. You must pass your user distinct ID");
         }
         $data = [
             'key' => $this->publicKey,
             'experiment_key' => $experimentKey,
-            'distinct_id' => $distinctId || $this->user_id
+            'distinct_id' => $distinctId ?: $this->user_id
         ];
         $headers = [];
         $client = new Client([
@@ -48,13 +48,13 @@ class Mida {
     }
 
     function setEvent($eventName, $distinctId, $properties = []) {
-        if (!$eventName || !$distinctId) {
+        if (!$eventName || (!$distinctId && !$this->user_id)) {
             throw new Exception("You need to set an event name. You must pass your user distinct ID");
         }
         $data = [
             'key' => $this->publicKey,
             'name' => $eventName,
-            'distinct_id' => $distinctId ?: $this->user_id
+            'distinct_id' => $distinctId ?: $this->user_id,
             'properties' => json_encode($properties)
         ];
         $headers = [];
@@ -69,14 +69,14 @@ class Mida {
     }
 
     function setAttribute($distinctId, $properties = []) {
-        if (!$distinctId || !$this->user_id) {
+        if (!$distinctId && !$this->user_id) {
             throw new Exception("You must pass your user distinct ID");
         }
         if (!$properties) {
             throw new Exception("You must pass your user properties");
         }
         $data = $properties;
-        $data['id'] = $distinctId || $this->user_id;
+        $data['id'] = $distinctId ?: $this->user_id;
         $headers = [];
         $client = new Client([
             'base_uri' => $this->host
