@@ -91,21 +91,22 @@ To use the Mida class in your project, follow these steps:
     }
     ```
 
-6. Check if a feature flag is enabled by calling the `isFeatureEnabled` method and passing the feature flag key:
+6. Check if a feature flag is enabled by calling the `isFeatureEnabled` method and passing the feature flag key and the user distinct ID. Flags are cached per user, so load them first with `onFeatureFlags($distinctId)` / `reloadFeatureFlags($distinctId)`:
     ```php
     $featureFlagKey = "your_feature_flag_key";
+    $mida->onFeatureFlags($distinctId);
     
-    if ($mida->isFeatureEnabled($featureFlagKey)) {
+    if ($mida->isFeatureEnabled($featureFlagKey, $distinctId)) {
         echo "Feature flag is enabled";
     } else {
         echo "Feature flag is disabled";
     }
     ```
 
-7. Reload feature flags by calling the `reloadFeatureFlags` method:
+7. Reload feature flags for a user by calling the `reloadFeatureFlags` method:
     ```php
     try {
-        $mida->reloadFeatureFlags();
+        $mida->reloadFeatureFlags($distinctId);
         echo "Feature flags reloaded successfully";
     } catch (Exception $e) {
         echo "Error: " . $e->getMessage();

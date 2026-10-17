@@ -41,7 +41,7 @@ class Mida {
             'json' => $data
         ]);
         $json = json_decode($response->getBody()->getContents(), true);
-        if ($json['version']) {
+        if (is_array($json) && !empty($json['version'])) {
             return $json['version'];
         }
         return null;
@@ -88,21 +88,26 @@ class Mida {
         return true;
     }
 
-    function cachedFeatureFlag() {
-        $cacheKey = $this->publicKey . ':' . $this->user_id;
+    // Flags are cached per user so one user's flags are never served to another.
+    protected function featureFlagCacheKey($distinctId = null) {
+        return $this->publicKey . ':' . ($distinctId ?: $this->user_id);
+    }
+
+    function cachedFeatureFlag($distinctId = null) {
+        $cacheKey = $this->featureFlagCacheKey($distinctId);
         if ($this->featureFlagCache->offsetExists($cacheKey)) {
             return $this->featureFlagCache->offsetGet($cacheKey);
         }
         return [];
     }
 
-    function isFeatureEnabled($key) {
-        $this->enabled_features = $this->cachedFeatureFlag();
+    function isFeatureEnabled($key, $distinctId = null) {
+        $this->enabled_features = $this->cachedFeatureFlag($distinctId);
         return in_array($key, $this->enabled_features);
     }
 
     function onFeatureFlags($distinctId = null) {
-        $cachedItems = count($this->cachedFeatureFlag());
+        $cachedItems = count($this->cachedFeatureFlag($distinctId));
         try {
             $this->reloadFeatureFlags($distinctId);
             if (!$cachedItems) {
@@ -119,7 +124,7 @@ class Mida {
     function reloadFeatureFlags($distinctId = null) {
         $data = [
             'key' => $this->publicKey,
-            'user_id' => $distinctId
+            'user_id' => $distinctId ?: $this->user_id
         ];
         $headers = [];
         $client = new Client([
@@ -130,12 +135,19 @@ class Mida {
             'json' => $data
         ]);
         $this->enabled_features = json_decode($response->getBody()->getContents(), true);
-        $cacheKey = $this->publicKey . ':' . $this->user_id;
+        $cacheKey = $this->featureFlagCacheKey($distinctId);
         $this->featureFlagCache->offsetSet($cacheKey, $this->enabled_features);
 
         if ($this->featureFlagCache->count() > $this->maxCacheSize) {
-            $oldestKey = $this->featureFlagCache->key();
-            $this->featureFlagCache->offsetUnset($oldestKey);
+            // ArrayObject has no key(); evict the oldest-inserted entry.
+            $oldestKey = null;
+            foreach ($this->featureFlagCache as $k => $_) {
+                $oldestKey = $k;
+                break;
+            }
+            if ($oldestKey !== null) {
+                $this->featureFlagCache->offsetUnset($oldestKey);
+            }
         }
         return true;
     }
